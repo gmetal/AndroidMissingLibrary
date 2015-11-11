@@ -1,1 +1,1 @@
-include ':missinglib'
+include ':missinglib', ':sample'
