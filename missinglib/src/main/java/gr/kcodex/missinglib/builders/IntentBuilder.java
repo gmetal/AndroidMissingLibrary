@@ -46,6 +46,26 @@ public class IntentBuilder {
         return this;
     }
 
+    public IntentBuilder putExtra(String name, Boolean value) {
+        mIntent.putExtra(name, value);
+        return this;
+    }
+
+    public IntentBuilder putExtra(String name, Integer value) {
+        mIntent.putExtra(name, value);
+        return this;
+    }
+
+    public IntentBuilder putExtra(String name, Float value) {
+        mIntent.putExtra(name, value);
+        return this;
+    }
+
+    public IntentBuilder putExtra(String name, Double value) {
+        mIntent.putExtra(name, value);
+        return this;
+    }
+
     public IntentBuilder addFlags(int flags) {
         mIntent.addFlags(flags);
         return this;
