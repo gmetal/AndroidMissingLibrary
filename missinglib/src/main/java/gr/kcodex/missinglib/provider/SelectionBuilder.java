@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import timber.log.Timber;
-
 /**
  * Helper for building selection clauses for {@link SQLiteDatabase}. Each
  * appended clause is combined using {@code AND}. This class is <em>not</em>
@@ -165,8 +163,6 @@ public class SelectionBuilder {
             mapColumns(columns);
         }
 
-        Timber.v("query(columns=%s, distinct=%s) %s",
-                Arrays.toString(columns), distinct, this);
         return db.query(distinct, mTable, columns, getSelection(), getSelectionArgs(), mGroupBy,
                 mHaving, orderBy, limit);
     }
@@ -176,7 +172,7 @@ public class SelectionBuilder {
      */
     public int update(SQLiteDatabase db, ContentValues values) {
         assertTable();
-        Timber.v("update() %s", this);
+
         return db.update(mTable, values, getSelection(), getSelectionArgs());
     }
 
@@ -185,7 +181,7 @@ public class SelectionBuilder {
      */
     public int delete(SQLiteDatabase db) {
         assertTable();
-        Timber.v("delete() %s", this);
+
         return db.delete(mTable, getSelection(), getSelectionArgs());
     }
 }
