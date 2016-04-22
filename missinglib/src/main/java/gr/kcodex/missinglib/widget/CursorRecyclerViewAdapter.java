@@ -1,32 +1,35 @@
 package gr.kcodex.missinglib.widget;
-/*
- * Copyright (C) 2014 skyfish.jy@gmail.com
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Filter;
+import android.widget.FilterQueryProvider;
 import android.widget.Filterable;
+
+/*
+* Copyright (C) 2014 skyfish.jy@gmail.com
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*
+*/
 
 /**
  * Created by skyfishjy on 10/31/14.
  */
-
-public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable, CursorFilter.CursorFilterClient {
+public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> implements Filterable,
+        CursorFilter.CursorFilterClient {
 
     private Context mContext;
 
@@ -37,6 +40,10 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
     private int mRowIdColumn;
 
     private DataSetObserver mDataSetObserver;
+
+    protected FilterQueryProvider mFilterQueryProvider;
+
+    protected CursorFilter mCursorFilter;
 
     public CursorRecyclerViewAdapter(Context context, Cursor cursor) {
         mContext = context;
@@ -59,6 +66,15 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
             return mCursor.getCount();
         }
         return 0;
+    }
+
+    public Object getItem(int position) {
+        if (mDataValid && mCursor != null) {
+            mCursor.moveToPosition(position);
+            return mCursor;
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -99,7 +115,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
     }
 
     /**
-     * Swap in a new Cursor, returning the old Cursor.  Unlike
+     * Swap in a new Cursor, returning the old Cursor. Unlike
      * {@link #changeCursor(Cursor)}, the returned old Cursor is <em>not</em>
      * closed.
      */
@@ -127,6 +143,62 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
         }
         return oldCursor;
     }
+
+    public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
+        if (mFilterQueryProvider != null) {
+            return mFilterQueryProvider.runQuery(constraint);
+        }
+
+        return mCursor;
+    }
+
+    /**
+     * Returns the query filter provider used for filtering. When the
+     * provider is null, no filtering occurs.
+     *
+     * @return the current filter query provider or null if it does not exist
+     * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
+     * @see #runQueryOnBackgroundThread(CharSequence)
+     */
+    public FilterQueryProvider getFilterQueryProvider() {
+        return mFilterQueryProvider;
+    }
+
+    /**
+     * Sets the query filter provider used to filter the current Cursor.
+     * The provider's
+     * {@link android.widget.FilterQueryProvider#runQuery(CharSequence)}
+     * method is invoked when filtering is requested by a client of
+     * this adapter.
+     *
+     * @param filterQueryProvider the filter query provider or null to remove it
+     * @see #getFilterQueryProvider()
+     * @see #runQueryOnBackgroundThread(CharSequence)
+     */
+    public void setFilterQueryProvider(FilterQueryProvider filterQueryProvider) {
+        mFilterQueryProvider = filterQueryProvider;
+    }
+
+    public Filter getFilter() {
+        if (mCursorFilter == null) {
+            mCursorFilter = new CursorFilter(this);
+        }
+        return mCursorFilter;
+    }
+
+    /**
+     * <p>Converts the cursor into a CharSequence. Subclasses should override this
+     * method to convert their results. The default implementation returns an
+     * empty String for null values or the default String representation of
+     * the value.</p>
+     *
+     * @param cursor the cursor to convert to a CharSequence
+     * @return a CharSequence representing the value
+     */
+    public CharSequence convertToString(Cursor cursor) {
+        return cursor == null ? "" : cursor.toString();
+    }
+
 
     private class NotifyingDataSetObserver extends DataSetObserver {
         @Override
